@@ -3,7 +3,7 @@ var fs = require('fs');
 var url = require('url');
 
 
-function templatePages(title, list, description){
+function templatePages(title, list, description, image){
 	return  `
 		<!doctype html>
 		<html>
@@ -26,8 +26,11 @@ function templatePages(title, list, description){
 				p { 					
 					font-family: 'Nerko One', cursive;  
 					color: #111; 
+					font-size: 18px;
 				}
-				#malta_jpg{
+				#jpg{
+					width: 1000px;
+					height: 562px;
 					display: block;
 					margin: 0 auto;					
 				}
@@ -42,7 +45,7 @@ function templatePages(title, list, description){
 			  </div>
 			  <h1><a href="index.html">Malta</a></h1>
 			  <h2>Malta is beautiful island</h2>
-			  <img id="malta_jpg" src="https://proxy.goorm.io//service/5fc258f48c477db5e7f801d0_deRM32F9G66dlOErU7n.run.goorm.io/9080//file/load/Malta.jpg?path=d29ya3NwYWNlJTJGbm9kZV9zdHVkeSUyRmRpcmVjdGx5X3VzZV9ub2RlanMlMkZNYWx0YS5qcGc=&docker_id=deRM32F9G66dlOErU7n&secure_session_id=yeIyeh1tQ878YKxWiVLnam4qz0tqdGmh"/>
+			  ${image}
 			  <div id="explainContainer">
 				  <p>${description}</p>
               </div>
@@ -73,30 +76,23 @@ var app = http.createServer(function(request,response){
 				fs.readFile(`data/${"Malta"}`, 'utf8', function(err, description){
 					var title = 'Welcome';				
 					var list = makelinks(filelist);
-					var html = templatePages(title, list, description);
+					var html = templatePages(title, list, description, `<img id="jpg" src="https://proxy.goorm.io//service/5fc258f48c477db5e7f801d0_deRM32F9G66dlOErU7n.run.goorm.io/9080//file/load/Malta.jpg?path=d29ya3NwYWNlJTJGbm9kZV9zdHVkeSUyRmRpcmVjdGx5X3VzZV9ub2RlanMlMkZNYWx0YS5qcGc=&docker_id=deRM32F9G66dlOErU7n&secure_session_id=yeIyeh1tQ878YKxWiVLnam4qz0tqdGmh"/>`);
 					response.writeHead(200);
 					response.end(html);
 				});																													
 			})					
 		} else{ //id값이 있는 경우
-			fs.readdir('./data', function(error, filelist){							
-				var filteredId = path.parse(queryData.id).base;
-				fs.readFile(`data/${filteredId}`, 'utf8', function(err, description){
+			fs.readdir('./data', function(error, filelist){											
+				fs.readFile(`data/${queryData.id}`, 'utf8', function(err, description){
 					var title = queryData.id;	
 					var list = makelinks(filelist);
-					var html = templatePages(title, list, description);
-					// var list = template.list(filelist);									
-					// var html = template.html(sanitizetitle, list, `<h2>${sanitizetitle}</h2>${sanitizeDescription}`, 
-					// `<a href="/create">create</a> <a href="/update?id=${sanitizetitle}">update</a> 
-					// <form action="delete_process" method="post"> 
-					// 	<input type="hidden" name="id" value="${sanitizetitle}">
-					// 	<input type="submit" value="delete">
-					// </form>`);			
+					var html = templatePages(title, list, description, `<img id="jpg" src="https://proxy.goorm.io//service/5fc258f48c477db5e7f801d0_deRM32F9G66dlOErU7n.run.goorm.io/9080//file/load/Guam.jpg?path=d29ya3NwYWNlJTJGbm9kZV9zdHVkeSUyRmRpcmVjdGx5X3VzZV9ub2RlanMlMkZpbWclMkZCYWxpLmpwZw==&docker_id=deRM32F9G66dlOErU7n&secure_session_id=z_-7_yShkdkkg1-1-Pb8-NdxvdF6O8SQ"/>`);							
 					response.writeHead(200);
 					response.end(html);
 				});
 			});
 		}
+		//https://media.timeout.com/images/105240189/1372/772/image.jpg
 		
 	}else{		
 		response.writeHead(404);
