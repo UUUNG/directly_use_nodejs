@@ -1,7 +1,7 @@
 var http = require('http');
 var fs = require('fs');
 var url = require('url');
-
+//var multer = require('multer')
 
 function templatePages(title, list, description, image){
 	return  `
@@ -43,8 +43,8 @@ function templatePages(title, list, description, image){
  			  <div id="leftMenuContainer">
 				  ${list}				  			  
 			  </div>
-			  <h1><a href="index.html">Malta</a></h1>
-			  <h2>Malta is beautiful island</h2>
+			  <h1><a href=?id=${title}>${title}</a></h1>
+			  <h2>${title} is beautiful island</h2>
 			  ${image}
 			  <div id="explainContainer">
 				  <p>${description}</p>
@@ -58,6 +58,13 @@ function makelinks(filelist){
 	var list = '';
 	var i = 0; 
 	while(i < filelist.length){
+		
+		for(var fl in filelist[i]){
+			var temp_list = '';
+			if (fl === ' '){
+				temp_list = temp_list + '';
+			}
+		}
 		list = list + `<a href="/?id=${filelist[i]}">${filelist[i]}</a>
 `
 		i = i + 1;	  
@@ -82,11 +89,16 @@ var app = http.createServer(function(request,response){
 				});																													
 			})					
 		} else{ //id값이 있는 경우
+			fs.readdir('./img', function(error, filelist){
+				img_srcs = filelist[0];
+			});
 			fs.readdir('./data', function(error, filelist){											
 				fs.readFile(`data/${queryData.id}`, 'utf8', function(err, description){
 					var title = queryData.id;	
 					var list = makelinks(filelist);
-					var html = templatePages(title, list, description, `<img id="jpg" src="https://proxy.goorm.io//service/5fc258f48c477db5e7f801d0_deRM32F9G66dlOErU7n.run.goorm.io/9080//file/load/Guam.jpg?path=d29ya3NwYWNlJTJGbm9kZV9zdHVkeSUyRmRpcmVjdGx5X3VzZV9ub2RlanMlMkZpbWclMkZCYWxpLmpwZw==&docker_id=deRM32F9G66dlOErU7n&secure_session_id=z_-7_yShkdkkg1-1-Pb8-NdxvdF6O8SQ"/>`);							
+					// var upload = multer({ dest: 'uploads/' })
+					// upload.single(title+".jpg");
+					var html = templatePages(title, list, description, `<img id="jpg" src="https://proxy.goorm.io//service/5fc258f48c477db5e7f801d0_deRM32F9G66dlOErU7n.run.goorm.io/9080//file/load/Guam.jpg?path=d29ya3NwYWNlJTJGbm9kZV9zdHVkeSUyRmRpcmVjdGx5X3VzZV9ub2RlanMlMkZpbWclMkZHdWFtLmpwZw==&docker_id=deRM32F9G66dlOErU7n&secure_session_id=z_-7_yShkdkkg1-1-Pb8-NdxvdF6O8SQ"/>`);							
 					response.writeHead(200);
 					response.end(html);
 				});
