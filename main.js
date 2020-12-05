@@ -2,40 +2,102 @@ var http = require('http');
 var fs = require('fs');
 var url = require('url');
 
-var app = http.createServer(function(request,response){
-	var _url = request.url;
-	var queryData = url.parse(_url, true).query;
-	var pathname =  url.parse(_url, true).pathname;
-	
-	if (pathname === '/'){
-		console.log("hi there");								
-		var html = `
+
+function templatePages(title, list, description){
+	return  `
 		<!doctype html>
 		<html>
 			<head>
 			  <link rel="preconnect" href="https://fonts.gstatic.com">
 <link href="https://fonts.googleapis.com/css2?family=Nerko+One&display=swap" rel="stylesheet">
-			  <title>WEB1 - Welcome</title>
+			  <title>${title}</title>
 			  <meta charset="utf-8">
 			  <style>
-				body { }
+				a {
+					color: #333333;
+					text-decoration: none;
+				}
+				a:hover{
+					color: #888888;
+				}
+				h1, h2 {
+					text-align : center;
+				}				
 				p { 					
 					font-family: 'Nerko One', cursive;  
 					color: #111; 
 				}
+				#malta_jpg{
+					display: block;
+					margin: 0 auto;					
+				}
+				#explainContainer{					
+					padding: 30px 100px;
+				}
 			  </style>
 			</head>
-			<body>
+			<body>	
+ 			  <div id="leftMenuContainer">
+				  ${list}				  			  
+			  </div>
 			  <h1><a href="index.html">Malta</a></h1>
 			  <h2>Malta is beautiful island</h2>
-			  <img src="https://proxy.goorm.io//service/5fc258f48c477db5e7f801d0_deRM32F9G66dlOErU7n.run.goorm.io/9080//file/load/Malta.jpg?path=d29ya3NwYWNlJTJGbm9kZV9zdHVkeSUyRmRpcmVjdGx5X3VzZV9ub2RlanMlMkZNYWx0YS5qcGc=&docker_id=deRM32F9G66dlOErU7n&secure_session_id=yeIyeh1tQ878YKxWiVLnam4qz0tqdGmh"/>
-			  <p>Malta (/ˈmɒltə/,[11] /ˈmɔːltə/ (About this soundlisten); in Maltese: [ˈmɐltɐ]; Italian: [ˈmalta]), officially known as the Republic of Malta (Maltese: Repubblika ta' Malta) and formerly Melita, is a Southern European island country consisting of an archipelago in the Mediterranean Sea.[12] It lies 80 km (50 mi) south of Italy, 284 km (176 mi) east of Tunisia,[13] and 333 km (207 mi) north of Libya.[14] With a population of about 515,000[4] over an area of 316 km2 (122 sq mi),[3] Malta is the world's tenth smallest country in area[15][16] and fourth most densely populated sovereign country. Its capital is Valletta, which is the smallest national capital in the European Union by area at 0.8 km2 (0.31 sq mi). The official and national language is Maltese, which is descended from Sicilian Arabic that developed during the Emirate of Sicily, while English serves as the second official language. Italian and Sicilian also previously served as official and cultural languages on the island for centuries, with Italian being an official language in Malta until 1934 and a majority of the current Maltese population being at least conversational in the Italian language.
-			  </p>
+			  <img id="malta_jpg" src="https://proxy.goorm.io//service/5fc258f48c477db5e7f801d0_deRM32F9G66dlOErU7n.run.goorm.io/9080//file/load/Malta.jpg?path=d29ya3NwYWNlJTJGbm9kZV9zdHVkeSUyRmRpcmVjdGx5X3VzZV9ub2RlanMlMkZNYWx0YS5qcGc=&docker_id=deRM32F9G66dlOErU7n&secure_session_id=yeIyeh1tQ878YKxWiVLnam4qz0tqdGmh"/>
+			  <div id="explainContainer">
+				  <p>${description}</p>
+              </div>
 			</body>
 		</html>
 		`;
-		response.writeHead(200);
-		response.end(html);
+}
+
+function makelinks(filelist){
+	var list = '';
+	var i = 0; 
+	while(i < filelist.length){
+		list = list + `<a href="/?id=${filelist[i]}">${filelist[i]}</a>
+`
+		i = i + 1;	  
+	}					
+	return list 
+}
+
+var app = http.createServer(function(request,response){
+	var _url = request.url;
+	var queryData = url.parse(_url, true).query;
+	var pathname =  url.parse(_url, true).pathname;
+	
+	if (pathname === '/'){				
+		if(queryData.id === undefined){ //홈일 때 (쿼리 데이터가 없을 때)			
+			fs.readdir('./data', function(error, filelist){		
+				fs.readFile(`data/${"Malta"}`, 'utf8', function(err, description){
+					var title = 'Welcome';				
+					var list = makelinks(filelist);
+					var html = templatePages(title, list, description);
+					response.writeHead(200);
+					response.end(html);
+				});																													
+			})					
+		} else{ //id값이 있는 경우
+			fs.readdir('./data', function(error, filelist){							
+				var filteredId = path.parse(queryData.id).base;
+				fs.readFile(`data/${filteredId}`, 'utf8', function(err, description){
+					var title = queryData.id;	
+					var list = makelinks(filelist);
+					var html = templatePages(title, list, description);
+					// var list = template.list(filelist);									
+					// var html = template.html(sanitizetitle, list, `<h2>${sanitizetitle}</h2>${sanitizeDescription}`, 
+					// `<a href="/create">create</a> <a href="/update?id=${sanitizetitle}">update</a> 
+					// <form action="delete_process" method="post"> 
+					// 	<input type="hidden" name="id" value="${sanitizetitle}">
+					// 	<input type="submit" value="delete">
+					// </form>`);			
+					response.writeHead(200);
+					response.end(html);
+				});
+			});
+		}
+		
 	}else{		
 		response.writeHead(404);
 		response.end("Not found");
@@ -43,3 +105,7 @@ var app = http.createServer(function(request,response){
 });
 
 app.listen(3001);
+
+//https://ppgin.run.goorm.io/
+
+//pm2 start main.js --watch --ignore-watch="data/* sessions/*"  --no-daemon
