@@ -17,17 +17,7 @@ function get_imgsrc(Qid, callback) { //이것이 비동기 프로그래밍인가
 var app = http.createServer(function(request,response){
 	var _url = request.url;
 	var queryData = url.parse(_url, true).query;
-	var pathname =  url.parse(_url, true).pathname;
-	
-	// db.query(`SELECT * FROM topic`, function(error, topics){			
-	// var title = 'Welcome';
-	// var description = 'Hello, Node.js';
-	// var list = template.list(topics);
-	// var html = template.HTML(title, list, `<h2>${title}</h2>${description}`, `<a href="/create">create</a>`
-	// );
-	// response.writeHead(200);
-	// response.end(html);
-	// })
+	var pathname =  url.parse(_url, true).pathname;		
 	
 	if (pathname === '/'){				
 		if(queryData.id === undefined){ //홈일 때 (쿼리 데이터가 없을 때)					
@@ -38,18 +28,23 @@ var app = http.createServer(function(request,response){
 				response.writeHead(200);
 				response.end(html);
 			})							
-		} else{ //id값이 있는 경우					
-			var imgsrc = '';
-			get_imgsrc(queryData.id, function (err, content) {
-				imgsrc += String(content);				
-			});		
-			fs.readdir('./data', function(error, filelist){											
-				fs.readFile(`data/${queryData.id}`, 'utf8', function(err, description){
-					var title = queryData.id;	
-					var list = template.makelinks(filelist);									
-					var html = template.html(title, list, description, `<img id="jpg" src=${imgsrc}/>`);							
+		} else{ //id값이 있는 경우									
+			db.query(`SELECT * FROM Topic`, function(error, Topics){
+				db.query(`SELECT * FROM Topic WHERE Topic.title=?`,[queryData.id], function(error2, Topic){
+					if(error2){
+						throw error2;
+					}
+					var title = Topic[0].title;
+					var description = Topic[0].description;						
+					var list = template.makelinks(Topics);									
+					var html = template.html(title, list, description, `<img id="jpg" src=${Topic[0].img}/>`);							
 					response.writeHead(200);
 					response.end(html);
+				})
+			})
+			fs.readdir('./data', function(error, filelist){											
+				fs.readFile(`data/${queryData.id}`, 'utf8', function(err, description){
+					
 				});
 			});			
 		}				
@@ -60,6 +55,7 @@ var app = http.createServer(function(request,response){
 });
 
 app.listen(3001);
+
 
 //https://ppgin.run.goorm.io/ 
 
