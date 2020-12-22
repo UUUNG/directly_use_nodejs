@@ -5,13 +5,13 @@ var db = require('./lib/db');
 var template = require('./lib/template.js');
 
 
-function get_imgsrc(Qid, callback) { //이것이 비동기 프로그래밍인가
-    fs.readdir('./img', function(error, filelist){					
-		fs.readFile(`img/${Qid}`, 'utf8', function(err, description){			
-			callback(null, description);									
-		});			
-	});
-}
+// function get_imgsrc(Qid, callback) { //이것이 비동기 프로그래밍인가
+//     fs.readdir('./img', function(error, filelist){					
+// 		fs.readFile(`img/${Qid}`, 'utf8', function(err, description){			
+// 			callback(null, description);									
+// 		});			
+// 	});
+// }
 
 
 var app = http.createServer(function(request,response){
@@ -22,9 +22,10 @@ var app = http.createServer(function(request,response){
 	if (pathname === '/'){				
 		if(queryData.id === undefined){ //홈일 때 (쿼리 데이터가 없을 때)					
 			db.query(`SELECT * FROM Topic`, function(error, Topics){
-				var title = 'Welcome';				
-				var list = template.makelinks(Topics);
-				var html = template.html(title, list, "This is Main page", ``);
+				var anchor_list = template.homelink(Topics);
+				var img_list = template.homeimg(Topics);
+				var title = 'Welcome';								
+				var html = template.home(title, anchor_list, "This is Main page", img_list);
 				response.writeHead(200);
 				response.end(html);
 			})							
