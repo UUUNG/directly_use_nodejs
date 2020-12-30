@@ -8,7 +8,7 @@ var template = require('./lib/template.js');
 var Topic = require('./lib/Topic');
 
 
-app.use(express.static('public'));
+app.use(express.static('img'));
 
 app.get('/topic/:pageID', function(request, response){	
 	pageID = request.params.pageID;
