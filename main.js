@@ -1,59 +1,65 @@
+var express = require('express')
+var app = express()
 var http = require('http');
 const fs = require('fs');
 var url = require('url');
 var db = require('./lib/db');
 var template = require('./lib/template.js');
+var Topic = require('./lib/Topic');
 
 
-// function get_imgsrc(Qid, callback) { //이것이 비동기 프로그래밍인가
-//     fs.readdir('./img', function(error, filelist){					
-// 		fs.readFile(`img/${Qid}`, 'utf8', function(err, description){			
-// 			callback(null, description);									
-// 		});			
-// 	});
-// }
+app.use(express.static('public'));
 
-
-var app = http.createServer(function(request,response){
-	var _url = request.url;
-	var queryData = url.parse(_url, true).query;
-	var pathname =  url.parse(_url, true).pathname;		
-	
-	if (pathname === '/'){				
-		if(queryData.id === undefined){ //홈일 때 (쿼리 데이터가 없을 때)					
-			db.query(`SELECT * FROM Topic`, function(error, Topics){
-				var anchor_list = template.homelink(Topics);
-				var img_list = template.homeimg(Topics);
-				var title = 'Welcome';								
-				var html = template.home(title, anchor_list, "This is Main page", img_list);
-				response.writeHead(200);
-				response.end(html);
-			})							
-		} else{ //id값이 있는 경우									
-			db.query(`SELECT * FROM Topic`, function(error, Topics){
-				db.query(`SELECT * FROM Topic WHERE Topic.title=?`,[queryData.id], function(error2, Topic){
-					if(error2){
-						throw error2;
-					}
-					var title = Topic[0].title;
-					var description = Topic[0].description;						
-					var list = template.makelinks(Topics);									
-					var html = template.html(title, list, description, `<img id="jpg" src=${Topic[0].img}/>`);							
-					response.writeHead(200);
-					response.end(html);
-				})
-			})
-			fs.readdir('./data', function(error, filelist){											
-				fs.readFile(`data/${queryData.id}`, 'utf8', function(err, description){
-					
-				});
-			});			
-		}				
-	}else{		
-		response.writeHead(404);
-		response.end("Not found");
-	}
+app.get('/topic/:pageID', function(request, response){	
+	pageID = request.params.pageID;
+	Topic.page(request, response, pageID); //클릭 시 그에 맞는 페이지 생성
 });
+
+app.get('/', function(request, response) { 
+	//console.log("This is home")
+	Topic.home(request, response);
+});
+
+
+
+app.get('/create', function(request, response) {
+	Topic.create(request, response);
+});
+
+
+app.use(function(req, res, next) {
+  res.status(404).send('Sorry cant find that!');
+});
+ 
+app.use(function (err, req, res, next) {
+  console.error(err.stack)
+  res.status(500).send('Something broke!')
+})
+
+app.listen(3000, function() {
+  //console.log('Example app listening on port 3000!')
+});
+// var app = http.createServer(function(request,response){
+// 	var _url = request.url;
+// 	var queryData = url.parse(_url, true).query;
+// 	var pathname =  url.parse(_url, true).pathname;		
+	
+// 	if (pathname === '/'){				
+// 		if(queryData.id === undefined){ //홈일 때 (쿼리 데이터가 없을 때)			
+// 			Topic.home(request,response); //메인 페이지 생성			
+// 		} else{ //id값이 있는 경우		
+// 			Topic.page(request,response); //클릭 시 그에 맞는 페이지 생성								
+// 		}				
+// 	}else if(pathname === "/create"){ 
+// 		Topic.create(request, response);
+// 	}else if(pathname === "/create_process"){
+		
+// 	}
+// 	else{		
+// 		response.writeHead(404);
+// 		response.end("Not found");
+// 	}
+// });
 
 app.listen(3001);
 
